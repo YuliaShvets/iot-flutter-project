@@ -30,16 +30,21 @@ class _MyHomePageState extends State<MyHomePage> {
   final TextEditingController textController = TextEditingController();
   int _counter = 0;
   bool isError = false;
+  bool isCharizardMode = false; // To track if Charizard mode is active
 
   void _changeValue() {
     setState(() {
       isError = false;
       final enteredValue = textController.text.trim();
       if (enteredValue.isNotEmpty) {
-        if (int.tryParse(enteredValue) != null) {
-          _counter += int.parse(enteredValue);
+        final parsedValue = int.tryParse(enteredValue);
+        if (parsedValue != null) {
+          _counter += parsedValue;
         } else if (enteredValue == 'Avada Kedavra') {
           _counter = 0;
+        } else if (enteredValue == 'Draconifors') {
+          // Activate Charizard mode
+          isCharizardMode = true;
         } else {
           isError = true;
         }
@@ -57,7 +62,17 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
       body: Padding(
         padding: const EdgeInsets.all(20),
-        child: Column(
+        child: isCharizardMode
+            ? InkWell(
+          onDoubleTap: () {
+            // Deactivate Charizard mode
+            setState(() {
+              isCharizardMode = false;
+            });
+          },
+          child: Image.asset('assets/image.png'), // Provide the path to your Charizard image
+        )
+            : Column(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
             Column(
@@ -88,9 +103,9 @@ class _MyHomePageState extends State<MyHomePage> {
               visible: isError,
               child: Container(
                 padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
+                decoration: const BoxDecoration(
                   color: Colors.redAccent,
-                  borderRadius: BorderRadius.circular(10),
+                  borderRadius: BorderRadius.all(Radius.circular(10)),
                 ),
                 child: const Text(
                   "Can't convert string to number :)",
