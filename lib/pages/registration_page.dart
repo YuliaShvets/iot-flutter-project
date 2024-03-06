@@ -9,7 +9,6 @@ class RegistrationPage extends StatelessWidget {
     final double screenWidth = screenSize.width;
 
     // Define constants for responsive adjustments
-    final double textFieldPadding = screenWidth * 0.1;
     final double verticalSpacing = screenWidth * 0.05;
     final double buttonPadding = screenWidth * 0.1;
 
