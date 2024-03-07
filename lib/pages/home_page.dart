@@ -43,7 +43,7 @@ class _HomePageState extends State<HomePage> {
             title: Text(
               tasks[index],
               style: TextStyle(
-                fontSize: screenSize.width * 0.04, // Adjust font size based on screen width
+                fontSize: screenSize.width * 0.04,
               ),
             ),
             value: taskCompleted[index],
@@ -59,7 +59,7 @@ class _HomePageState extends State<HomePage> {
         onPressed: () {
           Navigator.pushNamed(context, '/profile');
         },
-        child: Icon(Icons.person),
+        child: const Icon(Icons.person),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
     );

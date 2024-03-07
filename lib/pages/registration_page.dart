@@ -8,14 +8,13 @@ class RegistrationPage extends StatelessWidget {
     final Size screenSize = MediaQuery.of(context).size;
     final double screenWidth = screenSize.width;
 
-    // Define constants for responsive adjustments
     final double verticalSpacing = screenWidth * 0.05;
     final double buttonPadding = screenWidth * 0.1;
 
     return Scaffold(
       appBar: AppBar(title: const Text('Registration')),
       body: Padding(
-        padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.1), // Adjust horizontal padding
+        padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.1),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [

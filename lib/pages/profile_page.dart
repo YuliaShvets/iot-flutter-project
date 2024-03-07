@@ -9,7 +9,6 @@ class ProfilePage extends StatelessWidget {
     final double screenHeight = screenSize.height;
     final double screenWidth = screenSize.width;
 
-    // Define constants for responsive adjustments
     final double avatarRadius = screenHeight * 0.08;
     final double userNameFontSize = screenWidth * 0.06;
     final double emailFontSize = screenWidth * 0.045;
