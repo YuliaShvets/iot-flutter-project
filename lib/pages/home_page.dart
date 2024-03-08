@@ -19,7 +19,7 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    final screenSize = MediaQuery.of(context).size;
+    final screenSize = MediaQuery.sizeOf(context);
 
     return Scaffold(
       appBar: AppBar(
@@ -49,7 +49,9 @@ class _HomePageState extends State<HomePage> {
             value: taskCompleted[index],
             onChanged: (value) {
               setState(() {
-                taskCompleted[index] = value!;
+                if (value != null) {
+                  taskCompleted[index] = value;
+                }
               });
             },
           );

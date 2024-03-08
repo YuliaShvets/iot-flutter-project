@@ -54,7 +54,6 @@ class _LoginPageState extends State<LoginPage>
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // Logo
             FadeTransition(
               opacity: _logoAnimation,
               child: Container(
