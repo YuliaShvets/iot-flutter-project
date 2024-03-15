@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:iot_flutter_project/repository/LocalStorageRepository.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class LoginPage extends StatefulWidget {
@@ -16,6 +17,15 @@ class _LoginPageState extends State<LoginPage>
 
   late TextEditingController _emailController;
   late TextEditingController _passwordController;
+
+  final LocalStorageRepository _localStorageRepository = LocalStorageRepository();
+
+  Future<void> _saveRegistrationData() async {
+    await _localStorageRepository.loginUser(
+      _emailController.text,
+      _passwordController.text,
+    );
+  }
 
   @override
   void initState() {

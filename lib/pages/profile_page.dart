@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:iot_flutter_project/repository/LocalStorageRepository.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ProfilePage extends StatefulWidget {
@@ -90,11 +91,11 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
+  final LocalStorageRepository _localStorageRepository = LocalStorageRepository();
+
   Future<Map<String, String>> _getUserInfo() async {
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-    final String username = prefs.getString('username') ?? 'Username';
-    final String email = prefs.getString('email') ?? 'Email';
-    return {'username': username, 'email': email};
+    final userInfo = await _localStorageRepository.getUserInfo();
+    return userInfo;
   }
 
   Future<void> _logout(BuildContext context) async {

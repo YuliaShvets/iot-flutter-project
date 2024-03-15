@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:iot_flutter_project/repository/LocalStorageRepository.dart';
 
 class RegistrationPage extends StatefulWidget {
   const RegistrationPage({Key? key}) : super(key: key);
@@ -15,11 +15,14 @@ class _RegistrationPageState extends State<RegistrationPage> {
 
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
+  final LocalStorageRepository _localStorageRepository = LocalStorageRepository();
+
   Future<void> _saveRegistrationData() async {
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.setString('username', _usernameController.text);
-    await prefs.setString('email', _emailController.text);
-    await prefs.setString('password', _passwordController.text);
+    await _localStorageRepository.saveRegistrationData(
+      _usernameController.text,
+      _emailController.text,
+      _passwordController.text,
+    );
   }
 
   @override
