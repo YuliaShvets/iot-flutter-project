@@ -88,7 +88,8 @@ class _RegistrationPageState extends State<RegistrationPage> {
                 padding: EdgeInsets.symmetric(horizontal: buttonPadding),
                 child: ElevatedButton(
                   onPressed: () async {
-                    if (_formKey.currentState!.validate()) {
+                    if (_formKey.currentState != null &&
+                        _formKey.currentState!.validate()) {
                       await _saveRegistrationData();
                       Navigator.pushNamed(context, '/home');
                     }

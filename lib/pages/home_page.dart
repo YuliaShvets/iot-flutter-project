@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:iot_flutter_project/object/task.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -8,8 +9,12 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  List<String> tasks = ['Task 1', 'Task 2', 'Task 3', 'Task 4'];
-  List<bool> taskCompleted = [false, false, false, false];
+  List<Task> tasks = [
+    Task(name: 'Task 1'),
+    Task(name: 'Task 2'),
+    Task(name: 'Task 3'),
+    Task(name: 'Task 4'),
+  ];
 
   @override
   Widget build(BuildContext context) {
@@ -30,7 +35,7 @@ class _HomePageState extends State<HomePage> {
         itemCount: tasks.length,
         itemBuilder: (context, index) {
           return Dismissible(
-            key: Key(tasks[index]),
+            key: Key(tasks[index].name),
             direction: DismissDirection.endToStart,
             background: Container(
               color: Colors.red,
@@ -44,14 +49,15 @@ class _HomePageState extends State<HomePage> {
             onDismissed: (direction) {
               setState(() {
                 tasks.removeAt(index);
-                taskCompleted.removeAt(index);
               });
             },
             child: ListTile(
               title: TextFormField(
-                initialValue: tasks[index],
+                initialValue: tasks[index].name,
                 onChanged: (value) {
-                  tasks[index] = value;
+                  setState(() {
+                    tasks[index].name = value;
+                  });
                 },
                 decoration: InputDecoration(
                   border: const OutlineInputBorder(),
@@ -63,9 +69,11 @@ class _HomePageState extends State<HomePage> {
                 ),
               ),
               trailing: Checkbox(
-                value: taskCompleted[index],
+                value: tasks[index].completed,
                 onChanged: (value) {
-                  _toggleTaskCompletion(index, value);
+                  setState(() {
+                    tasks[index].completed = value ?? false;
+                  });
                 },
               ),
             ),
@@ -107,7 +115,7 @@ class _HomePageState extends State<HomePage> {
             ),
             ElevatedButton(
               onPressed: () {
-                _addTask(newTaskName);
+                _addTask(Task(name: newTaskName));
                 Navigator.of(context).pop();
               },
               child: const Text('Add'),
@@ -118,16 +126,9 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  void _addTask(String newTaskName) {
+  void _addTask(Task task) {
     setState(() {
-      tasks.add(newTaskName);
-      taskCompleted.add(false);
-    });
-  }
-
-  void _toggleTaskCompletion(int index, bool? value) {
-    setState(() {
-      taskCompleted[index] = value ?? false;
+      tasks.add(task);
     });
   }
 }
