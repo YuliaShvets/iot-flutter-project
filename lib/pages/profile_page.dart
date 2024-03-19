@@ -28,7 +28,8 @@ class _ProfilePageState extends State<ProfilePage> {
         if (snapshot.hasError) {
           return Center(child: Text('Error: ${snapshot.error}'));
         }
-        final Map<String, String> userInfo = snapshot.data as Map<String, String>;
+        final Map<String, String> userInfo =
+        snapshot.data as Map<String, String>;
         final String username = userInfo['username'] ?? 'Username';
         final String email = userInfo['email'] ?? 'Email';
 
@@ -77,7 +78,7 @@ class _ProfilePageState extends State<ProfilePage> {
                   const SizedBox(height: 10),
                   ElevatedButton(
                     onPressed: () {
-                      _logout(context);
+                      _showLogoutConfirmationDialog(context);
                     },
                     child: const Text('Logout'),
                   ),
@@ -90,7 +91,8 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
-  final LocalStorageRepository _localStorageRepository = LocalStorageRepository();
+  final LocalStorageRepository _localStorageRepository =
+  LocalStorageRepository();
 
   Future<Map<String, String>> _getUserInfo() async {
     final userInfo = await _localStorageRepository.getUserInfo();
@@ -99,5 +101,31 @@ class _ProfilePageState extends State<ProfilePage> {
 
   Future<void> _logout(BuildContext context) async {
     Navigator.pushNamedAndRemoveUntil(context, '/login', (route) => false);
+  }
+
+  Future<void> _showLogoutConfirmationDialog(BuildContext context) async {
+    return showDialog<void>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Confirm Logout'),
+          content: const Text('Are you sure you want to logout?'),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                _logout(context);
+              },
+              child: const Text('Logout'),
+            ),
+          ],
+        );
+      },
+    );
   }
 }
