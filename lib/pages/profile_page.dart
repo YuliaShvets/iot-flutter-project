@@ -100,7 +100,6 @@ class _ProfilePageState extends State<ProfilePage> {
 
   Future<void> _logout(BuildContext context) async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.clear();
     Navigator.pushNamedAndRemoveUntil(context, '/login', (route) => false);
   }
 }
