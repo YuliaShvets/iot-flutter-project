@@ -1,25 +1,25 @@
 import 'package:flutter/material.dart';
+import 'package:iot_flutter_project/object/task.dart';
 
 class HomePage extends StatefulWidget {
-  const HomePage({super.key});
+  const HomePage({Key? key}) : super(key: key);
 
   @override
   _HomePageState createState() => _HomePageState();
 }
 
 class _HomePageState extends State<HomePage> {
-  List<String> tasks = [
-    'Task 1',
-    'Task 2',
-    'Task 3',
-    'Task 4',
+  List<Task> tasks = [
+    Task(name: 'Task 1'),
+    Task(name: 'Task 2'),
+    Task(name: 'Task 3'),
+    Task(name: 'Task 4'),
   ];
-
-  List<bool> taskCompleted = [false, false, false, false];
 
   @override
   Widget build(BuildContext context) {
-    final screenSize = MediaQuery.sizeOf(context);
+    final Size screenSize = MediaQuery.sizeOf(context);
+    final double screenWidth = screenSize.width;
 
     return Scaffold(
       appBar: AppBar(
@@ -27,33 +27,56 @@ class _HomePageState extends State<HomePage> {
         actions: [
           IconButton(
             icon: const Icon(Icons.add),
-            onPressed: () {
-              setState(() {
-                tasks.add('New Task ${tasks.length + 1}');
-                taskCompleted.add(false);
-              });
-            },
+            onPressed: _showAddTaskDialog,
           ),
         ],
       ),
       body: ListView.builder(
         itemCount: tasks.length,
         itemBuilder: (context, index) {
-          return CheckboxListTile(
-            title: Text(
-              tasks[index],
-              style: TextStyle(
-                fontSize: screenSize.width * 0.04,
+          return Dismissible(
+            key: Key(tasks[index].name),
+            direction: DismissDirection.endToStart,
+            background: Container(
+              color: Colors.red,
+              alignment: Alignment.centerRight,
+              padding: const EdgeInsets.only(right: 20),
+              child: const Icon(
+                Icons.delete,
+                color: Colors.white,
               ),
             ),
-            value: taskCompleted[index],
-            onChanged: (value) {
+            onDismissed: (direction) {
               setState(() {
-                if (value != null) {
-                  taskCompleted[index] = value;
-                }
+                tasks.removeAt(index);
               });
             },
+            child: ListTile(
+              title: TextFormField(
+                initialValue: tasks[index].name,
+                onChanged: (value) {
+                  setState(() {
+                    tasks[index].name = value;
+                  });
+                },
+                decoration: InputDecoration(
+                  border: const OutlineInputBorder(),
+                  labelText: 'Task Name',
+                  contentPadding: EdgeInsets.symmetric(
+                    horizontal: screenWidth * 0.03,
+                    vertical: 10,
+                  ),
+                ),
+              ),
+              trailing: Checkbox(
+                value: tasks[index].completed,
+                onChanged: (value) {
+                  setState(() {
+                    tasks[index].completed = value ?? false;
+                  });
+                },
+              ),
+            ),
           );
         },
       ),
@@ -65,5 +88,47 @@ class _HomePageState extends State<HomePage> {
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
     );
+  }
+
+  void _showAddTaskDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        String newTaskName = '';
+        return AlertDialog(
+          title: const Text('Add New Task'),
+          content: TextFormField(
+            onChanged: (value) {
+              newTaskName = value;
+            },
+            decoration: const InputDecoration(
+              border: OutlineInputBorder(),
+              labelText: 'Task Name',
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                _addTask(Task(name: newTaskName));
+                Navigator.of(context).pop();
+              },
+              child: const Text('Add'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _addTask(Task task) {
+    setState(() {
+      tasks.add(task);
+    });
   }
 }

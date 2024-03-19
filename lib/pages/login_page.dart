@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:iot_flutter_project/repository/LocalStorageRepository.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({Key? key});
@@ -12,6 +14,18 @@ class _LoginPageState extends State<LoginPage>
   late AnimationController _controller;
   late Animation<double> _logoAnimation;
   late Animation<double> _formAnimation;
+
+  late TextEditingController _emailController;
+  late TextEditingController _passwordController;
+
+  final LocalStorageRepository _localStorageRepository = LocalStorageRepository();
+
+  Future<void> _saveRegistrationData() async {
+    await _localStorageRepository.loginUser(
+      _emailController.text,
+      _passwordController.text,
+    );
+  }
 
   @override
   void initState() {
@@ -27,24 +41,62 @@ class _LoginPageState extends State<LoginPage>
       CurvedAnimation(parent: _controller, curve: const Interval(0.5, 1)),
     );
 
+    _emailController = TextEditingController();
+    _passwordController = TextEditingController();
+
     _controller.forward();
   }
 
   @override
   void dispose() {
     _controller.dispose();
+    _emailController.dispose();
+    _passwordController.dispose();
     super.dispose();
+  }
+
+  Future<bool> _loginUser(String email, String password) async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    final String? storedEmail = prefs.getString('email');
+    final String? storedPassword = prefs.getString('password');
+
+    return email == storedEmail && password == storedPassword;
+  }
+
+  void _login() async {
+    final String email = _emailController.text;
+    final String password = _passwordController.text;
+
+    final bool loggedIn = await _loginUser(email, password);
+    if (loggedIn) {
+      Navigator.pushReplacementNamed(context, '/home');
+    } else {
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('Login Failed'),
+          content: const Text('Invalid email or password. Please try again.'),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: const Text('OK'),
+            ),
+          ],
+        ),
+      );
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    final Size screenSize = MediaQuery.of(context).size;
+    final Size screenSize = MediaQuery.sizeOf(context);
     final double screenWidth = screenSize.width;
 
     final double logoHeight = screenWidth * 0.2;
     final double verticalSpacing = screenWidth * 0.05;
     final double buttonPadding = screenWidth * 0.1;
-
     return Scaffold(
       appBar: AppBar(
         title: const Text('Login'),
@@ -68,6 +120,7 @@ class _LoginPageState extends State<LoginPage>
             FadeTransition(
               opacity: _formAnimation,
               child: TextFormField(
+                controller: _emailController,
                 decoration: const InputDecoration(
                   labelText: 'Email',
                   border: OutlineInputBorder(),
@@ -75,10 +128,10 @@ class _LoginPageState extends State<LoginPage>
               ),
             ),
             SizedBox(height: verticalSpacing),
-            // Password field
             FadeTransition(
               opacity: _formAnimation,
               child: TextFormField(
+                controller: _passwordController,
                 obscureText: true,
                 decoration: const InputDecoration(
                   labelText: 'Password',
@@ -87,21 +140,17 @@ class _LoginPageState extends State<LoginPage>
               ),
             ),
             SizedBox(height: verticalSpacing),
-            // Login button
             Padding(
               padding: EdgeInsets.symmetric(horizontal: buttonPadding),
               child: ScaleTransition(
                 scale: _formAnimation,
                 child: ElevatedButton(
-                  onPressed: () {
-                    Navigator.pushReplacementNamed(context, '/home');
-                  },
+                  onPressed: _login,
                   child: const Text('Login'),
                 ),
               ),
             ),
             const SizedBox(height: 10),
-            // Registration button
             ScaleTransition(
               scale: _formAnimation,
               child: TextButton(

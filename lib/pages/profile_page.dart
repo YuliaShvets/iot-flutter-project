@@ -1,64 +1,105 @@
 import 'package:flutter/material.dart';
+import 'package:iot_flutter_project/repository/LocalStorageRepository.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-class ProfilePage extends StatelessWidget {
+class ProfilePage extends StatefulWidget {
   const ProfilePage({Key? key});
 
   @override
+  _ProfilePageState createState() => _ProfilePageState();
+}
+
+class _ProfilePageState extends State<ProfilePage> {
+  late Future<Map<String, String>> _userInfoFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _userInfoFuture = _getUserInfo();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final Size screenSize = MediaQuery.sizeOf(context);
-    final double screenHeight = screenSize.height;
-    final double screenWidth = screenSize.width;
+    return FutureBuilder(
+      future: _userInfoFuture,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        }
+        if (snapshot.hasError) {
+          return Center(child: Text('Error: ${snapshot.error}'));
+        }
+        final Map<String, String> userInfo = snapshot.data as Map<String, String>;
+        final String username = userInfo['username'] ?? 'Username';
+        final String email = userInfo['email'] ?? 'Email';
 
-    final double avatarRadius = screenHeight * 0.08;
-    final double userNameFontSize = screenWidth * 0.06;
-    final double emailFontSize = screenWidth * 0.045;
-    final double buttonPaddingVertical = screenHeight * 0.04;
-
-    return Scaffold(
-      appBar: AppBar(title: const Text('User Profile')),
-      body: Center(
-        child: SingleChildScrollView(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              CircleAvatar(
-                radius: avatarRadius,
-                backgroundColor: Colors.blue,
-                child: Icon(
-                  Icons.person,
-                  size: avatarRadius * 0.8,
-                  color: Colors.white,
-                ),
+        return Scaffold(
+          appBar: AppBar(title: const Text('User Profile')),
+          body: Center(
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const CircleAvatar(
+                    radius: 50,
+                    backgroundColor: Colors.blue,
+                    child: Icon(
+                      Icons.person,
+                      size: 50,
+                      color: Colors.white,
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  Text(
+                    username,
+                    style: const TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  Text(
+                    email,
+                    style: const TextStyle(
+                      fontSize: 18,
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  ElevatedButton(
+                    onPressed: () {
+                      Navigator.pushNamed(context, '/edit_profile').then((_) {
+                        setState(() {
+                          _userInfoFuture = _getUserInfo();
+                        });
+                      });
+                    },
+                    child: const Text('Edit Profile'),
+                  ),
+                  const SizedBox(height: 10),
+                  ElevatedButton(
+                    onPressed: () {
+                      _logout(context);
+                    },
+                    child: const Text('Logout'),
+                  ),
+                ],
               ),
-              SizedBox(height: screenHeight * 0.05),
-              Text(
-                'Yulia Shvets',
-                style: TextStyle(
-                  fontSize: userNameFontSize,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              SizedBox(height: screenHeight * 0.02),
-              Text(
-                'yuliia.shvets04@gmail.com',
-                style: TextStyle(
-                  fontSize: emailFontSize,
-                ),
-              ),
-              SizedBox(height: screenHeight * 0.05),
-              Padding(
-                padding: EdgeInsets.symmetric(vertical: buttonPaddingVertical),
-                child: ElevatedButton(
-                  onPressed: () {
-                    Navigator.pushNamedAndRemoveUntil(context, '/login', (route) => false);
-                  },
-                  child: const Text('Logout'),
-                ),
-              ),
-            ],
+            ),
           ),
-        ),
-      ),
+        );
+      },
     );
+  }
+
+  final LocalStorageRepository _localStorageRepository = LocalStorageRepository();
+
+  Future<Map<String, String>> _getUserInfo() async {
+    final userInfo = await _localStorageRepository.getUserInfo();
+    return userInfo;
+  }
+
+  Future<void> _logout(BuildContext context) async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    Navigator.pushNamedAndRemoveUntil(context, '/login', (route) => false);
   }
 }
