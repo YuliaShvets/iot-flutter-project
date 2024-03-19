@@ -5,6 +5,13 @@ class LocalStorageRepository {
   static const String _emailKey = 'email';
   static const String _passwordKey = 'password';
 
+  Future<bool> hasUserData() async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    final String? email = prefs.getString(_emailKey);
+    final String? password = prefs.getString(_passwordKey);
+    return email != null && password != null;
+  }
+
   Future<void> saveRegistrationData(
       String username,
       String email,

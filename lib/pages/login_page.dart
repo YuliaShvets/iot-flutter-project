@@ -20,7 +20,7 @@ class _LoginPageState extends State<LoginPage>
   final LocalStorageRepository _localStorageRepository = LocalStorageRepository();
 
   Future<bool> _loginUser() async {
-   return await _localStorageRepository.loginUser(
+    return await _localStorageRepository.loginUser(
       _emailController.text,
       _passwordController.text,
     );
@@ -44,6 +44,8 @@ class _LoginPageState extends State<LoginPage>
     _passwordController = TextEditingController();
 
     _controller.forward();
+
+    _checkAutoLogin();
   }
 
   @override
@@ -54,10 +56,53 @@ class _LoginPageState extends State<LoginPage>
     super.dispose();
   }
 
+  void _checkAutoLogin() async {
+    await Future.delayed(const Duration(seconds: 3));
+    final bool userDataExists = await _localStorageRepository.hasUserData();
+    if (userDataExists) {
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('Auto-Login'),
+          content: const Text('Do you want to log in automatically?'),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: const Text('No'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.pushReplacementNamed(context, '/home');
+              },
+              child: const Text('Yes'),
+            ),
+          ],
+        ),
+      );
+    }
+  }
+
   void _login() async {
     final bool loggedIn = await _loginUser();
     if (loggedIn) {
-      Navigator.pushReplacementNamed(context, '/home');
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('Login Successful'),
+          content: const Text('You have successfully logged in.'),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                Navigator.pushReplacementNamed(context, '/home');
+              },
+              child: const Text('OK'),
+            ),
+          ],
+        ),
+      );
     } else {
       showDialog(
         context: context,
@@ -77,9 +122,10 @@ class _LoginPageState extends State<LoginPage>
     }
   }
 
+
   @override
   Widget build(BuildContext context) {
-    final Size screenSize = MediaQuery.sizeOf(context);
+    final Size screenSize = MediaQuery.of(context).size;
     final double screenWidth = screenSize.width;
 
     final double logoHeight = screenWidth * 0.2;
