@@ -60,6 +60,12 @@ class _LoginPageState extends State<LoginPage>
   }
 
   void _checkAutoLogin() async {
+    final connectivityResult = await Connectivity().checkConnectivity();
+    if (connectivityResult == ConnectivityResult.none) {
+      _showNoInternetDialog();
+      return;
+    }
+
     await Future.delayed(const Duration(seconds: 3));
     final bool userDataExists = await _localStorageRepository.hasUserData();
     if (userDataExists) {
@@ -182,7 +188,6 @@ class _LoginPageState extends State<LoginPage>
                 ),
               ),
             ),
-            // Email field
             FadeTransition(
               opacity: _formAnimation,
               child: TextFormField(

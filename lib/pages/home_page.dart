@@ -1,3 +1,6 @@
+import 'dart:async';
+
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:iot_flutter_project/object/task.dart';
 
@@ -16,6 +19,29 @@ class _HomePageState extends State<HomePage> {
     Task(name: 'Task 4'),
   ];
 
+  late Connectivity _connectivity;
+  late StreamSubscription<ConnectivityResult> _connectivitySubscription;
+
+  bool _isConnected = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _connectivity = Connectivity();
+    _connectivitySubscription =
+        _connectivity.onConnectivityChanged.listen((ConnectivityResult result) {
+          setState(() {
+            _isConnected = (result != ConnectivityResult.none);
+          });
+        });
+  }
+
+  @override
+  void dispose() {
+    _connectivitySubscription.cancel();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     final Size screenSize = MediaQuery.sizeOf(context);
@@ -31,7 +57,8 @@ class _HomePageState extends State<HomePage> {
           ),
         ],
       ),
-      body: ListView.builder(
+      body: _isConnected
+          ? ListView.builder(
         itemCount: tasks.length,
         itemBuilder: (context, index) {
           return Dismissible(
@@ -79,6 +106,15 @@ class _HomePageState extends State<HomePage> {
             ),
           );
         },
+      )
+          : const Center(
+        child: Text(
+          'No Internet Connection',
+          style: TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
