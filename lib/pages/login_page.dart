@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:iot_flutter_project/repository/LocalStorageRepository.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({Key? key});
@@ -20,8 +19,8 @@ class _LoginPageState extends State<LoginPage>
 
   final LocalStorageRepository _localStorageRepository = LocalStorageRepository();
 
-  Future<void> _saveRegistrationData() async {
-    await _localStorageRepository.loginUser(
+  Future<bool> _loginUser() async {
+   return await _localStorageRepository.loginUser(
       _emailController.text,
       _passwordController.text,
     );
@@ -55,19 +54,8 @@ class _LoginPageState extends State<LoginPage>
     super.dispose();
   }
 
-  Future<bool> _loginUser(String email, String password) async {
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-    final String? storedEmail = prefs.getString('email');
-    final String? storedPassword = prefs.getString('password');
-
-    return email == storedEmail && password == storedPassword;
-  }
-
   void _login() async {
-    final String email = _emailController.text;
-    final String password = _passwordController.text;
-
-    final bool loggedIn = await _loginUser(email, password);
+    final bool loggedIn = await _loginUser();
     if (loggedIn) {
       Navigator.pushReplacementNamed(context, '/home');
     } else {

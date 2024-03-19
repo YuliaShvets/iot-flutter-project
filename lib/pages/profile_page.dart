@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:iot_flutter_project/repository/LocalStorageRepository.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({Key? key});
@@ -99,7 +98,6 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   Future<void> _logout(BuildContext context) async {
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
     Navigator.pushNamedAndRemoveUntil(context, '/login', (route) => false);
   }
 }
