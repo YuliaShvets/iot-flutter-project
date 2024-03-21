@@ -163,7 +163,7 @@ class _LoginPageState extends State<LoginPage>
 
   @override
   Widget build(BuildContext context) {
-    final Size screenSize = MediaQuery.of(context).size;
+    final Size screenSize = MediaQuery.sizeOf(context);
     final double screenWidth = screenSize.width;
 
     final double logoHeight = screenWidth * 0.2;
