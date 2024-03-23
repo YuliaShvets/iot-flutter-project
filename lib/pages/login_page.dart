@@ -1,6 +1,6 @@
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:iot_flutter_project/repository/LocalStorageRepository.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({Key? key});
@@ -20,8 +20,8 @@ class _LoginPageState extends State<LoginPage>
 
   final LocalStorageRepository _localStorageRepository = LocalStorageRepository();
 
-  Future<void> _saveRegistrationData() async {
-    await _localStorageRepository.loginUser(
+  Future<bool> _loginUser() async {
+    return await _localStorageRepository.loginUser(
       _emailController.text,
       _passwordController.text,
     );
@@ -45,6 +45,10 @@ class _LoginPageState extends State<LoginPage>
     _passwordController = TextEditingController();
 
     _controller.forward();
+
+    _checkAutoLogin();
+
+    Connectivity().checkConnectivity();
   }
 
   @override
@@ -55,39 +59,107 @@ class _LoginPageState extends State<LoginPage>
     super.dispose();
   }
 
-  Future<bool> _loginUser(String email, String password) async {
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-    final String? storedEmail = prefs.getString('email');
-    final String? storedPassword = prefs.getString('password');
+  void _checkAutoLogin() async {
+    final connectivityResult = await Connectivity().checkConnectivity();
+    if (connectivityResult == ConnectivityResult.none) {
+      _showNoInternetDialog();
+      return;
+    }
 
-    return email == storedEmail && password == storedPassword;
-  }
-
-  void _login() async {
-    final String email = _emailController.text;
-    final String password = _passwordController.text;
-
-    final bool loggedIn = await _loginUser(email, password);
-    if (loggedIn) {
-      Navigator.pushReplacementNamed(context, '/home');
-    } else {
+    await Future.delayed(const Duration(seconds: 3));
+    final bool userDataExists = await _localStorageRepository.hasUserData();
+    if (userDataExists) {
       showDialog(
         context: context,
         builder: (context) => AlertDialog(
-          title: const Text('Login Failed'),
-          content: const Text('Invalid email or password. Please try again.'),
+          title: const Text('Auto-Login'),
+          content: const Text('Do you want to log in automatically?'),
           actions: [
             TextButton(
               onPressed: () {
                 Navigator.of(context).pop();
               },
-              child: const Text('OK'),
+              child: const Text('No'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.pushReplacementNamed(context, '/home');
+              },
+              child: const Text('Yes'),
             ),
           ],
         ),
       );
     }
   }
+
+  void _showNoInternetDialog() {
+    showDialog<void>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('No Internet Connection'),
+          content: const Text('You are not connected to the internet. '
+              'Please check your connection and try again.'),
+          actions: [
+            TextButton(
+              child: const Text('OK'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _login() async {
+    final connectivityResult = await Connectivity().checkConnectivity();
+    if (connectivityResult == ConnectivityResult.none) {
+      _showNoInternetDialog();
+    } else {
+      final bool loggedIn = await _loginUser();
+      if (loggedIn) {
+        showDialog(
+          context: context,
+          builder: (context) =>
+              AlertDialog(
+                title: const Text('Login Successful'),
+                content: const Text('You have successfully logged in.'),
+                actions: [
+                  TextButton(
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                      Navigator.pushReplacementNamed(context, '/home');
+                    },
+                    child: const Text('OK'),
+                  ),
+                ],
+              ),
+        );
+      } else {
+        showDialog(
+          context: context,
+          builder: (context) =>
+              AlertDialog(
+                title: const Text('Login Failed'),
+                content: const Text(
+                    'Invalid email or password. Please try again.'),
+                actions: [
+                  TextButton(
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                    },
+                    child: const Text('OK'),
+                  ),
+                ],
+              ),
+        );
+      }
+    }
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -116,7 +188,6 @@ class _LoginPageState extends State<LoginPage>
                 ),
               ),
             ),
-            // Email field
             FadeTransition(
               opacity: _formAnimation,
               child: TextFormField(
