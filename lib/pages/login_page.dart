@@ -18,7 +18,8 @@ class _LoginPageState extends State<LoginPage>
   late TextEditingController _emailController;
   late TextEditingController _passwordController;
 
-  final LocalStorageRepository _localStorageRepository = LocalStorageRepository();
+  final LocalStorageRepository _localStorageRepository =
+      LocalStorageRepository();
 
   Future<bool> _loginUser() async {
     return await _localStorageRepository.loginUser(
@@ -30,8 +31,8 @@ class _LoginPageState extends State<LoginPage>
   @override
   void initState() {
     super.initState();
-    _controller =
-        AnimationController(duration: const Duration(milliseconds: 1000), vsync: this);
+    _controller = AnimationController(
+        duration: const Duration(milliseconds: 1000), vsync: this);
 
     _logoAnimation = Tween<double>(begin: 0, end: 1).animate(
       CurvedAnimation(parent: _controller, curve: const Interval(0, 0.5)),
@@ -123,43 +124,39 @@ class _LoginPageState extends State<LoginPage>
       if (loggedIn) {
         showDialog(
           context: context,
-          builder: (context) =>
-              AlertDialog(
-                title: const Text('Login Successful'),
-                content: const Text('You have successfully logged in.'),
-                actions: [
-                  TextButton(
-                    onPressed: () {
-                      Navigator.of(context).pop();
-                      Navigator.pushReplacementNamed(context, '/home');
-                    },
-                    child: const Text('OK'),
-                  ),
-                ],
+          builder: (context) => AlertDialog(
+            title: const Text('Login Successful'),
+            content: const Text('You have successfully logged in.'),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                  Navigator.pushReplacementNamed(context, '/home');
+                },
+                child: const Text('OK'),
               ),
+            ],
+          ),
         );
       } else {
         showDialog(
           context: context,
-          builder: (context) =>
-              AlertDialog(
-                title: const Text('Login Failed'),
-                content: const Text(
-                    'Invalid email or password. Please try again.'),
-                actions: [
-                  TextButton(
-                    onPressed: () {
-                      Navigator.of(context).pop();
-                    },
-                    child: const Text('OK'),
-                  ),
-                ],
+          builder: (context) => AlertDialog(
+            title: const Text('Login Failed'),
+            content: const Text('Invalid email or password. Please try again.'),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                child: const Text('OK'),
               ),
+            ],
+          ),
         );
       }
     }
   }
-
 
   @override
   Widget build(BuildContext context) {

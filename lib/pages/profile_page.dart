@@ -50,7 +50,8 @@ class _ProfilePageState extends State<ProfilePage> {
         if (snapshot.hasError) {
           return Center(child: Text('Error: ${snapshot.error}'));
         }
-        final Map<String, String> userInfo = snapshot.data as Map<String, String>;
+        final Map<String, String> userInfo =
+            snapshot.data as Map<String, String>;
         final String username = userInfo['username'] ?? 'Username';
         final String email = userInfo['email'] ?? 'Email';
 
@@ -131,7 +132,8 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
-  final LocalStorageRepository _localStorageRepository = LocalStorageRepository();
+  final LocalStorageRepository _localStorageRepository =
+      LocalStorageRepository();
 
   Future<Map<String, String>> _getUserInfo() async {
     final userInfo = await _localStorageRepository.getUserInfo();

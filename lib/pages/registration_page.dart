@@ -15,7 +15,8 @@ class _RegistrationPageState extends State<RegistrationPage> {
 
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
-  final LocalStorageRepository _localStorageRepository = LocalStorageRepository();
+  final LocalStorageRepository _localStorageRepository =
+      LocalStorageRepository();
 
   Future<void> _saveRegistrationData() async {
     await _localStorageRepository.saveRegistrationData(
