@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:iot_flutter_project/object/task.dart';
+import 'package:iot_flutter_project/repository/impl/task_repository_impl.dart';
 import 'package:iot_flutter_project/repository/task_repository.dart';
 
 class HomePage extends StatefulWidget {
@@ -18,6 +19,8 @@ class _HomePageState extends State<HomePage> {
   late StreamSubscription<ConnectivityResult> _connectivitySubscription;
   bool _isConnected = true;
 
+  final TaskRepository _taskRepository = TaskRepositoryImpl();
+
   @override
   void initState() {
     super.initState();
@@ -31,6 +34,8 @@ class _HomePageState extends State<HomePage> {
         _fetchTasks();
       }
     });
+
+    _fetchTasks();
   }
 
   @override
@@ -40,19 +45,19 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future<void> _fetchTasks() async {
-    final List<Task> fetchedTasks = await TaskRepository.fetchTasks();
+    final List<Task> fetchedTasks = await _taskRepository.fetchTasks();
     setState(() {
       tasks = fetchedTasks;
     });
   }
 
   Future<void> _addTask(String taskName) async {
-    await TaskRepository.addTask(taskName);
+    await _taskRepository.addTask(taskName);
     await _fetchTasks();
   }
 
   void _deleteTask(String id) async {
-    await TaskRepository.deleteTask(id);
+    await _taskRepository.deleteTask(id);
     setState(() {
       tasks.removeWhere((task) => task.id == id);
     });
