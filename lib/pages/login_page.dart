@@ -151,7 +151,6 @@ class _LoginPageState extends State<LoginPage>
                       ),
                     ),
                   ),
-                  // Email field
                   FadeTransition(
                     opacity: _formAnimation,
                     child: TextFormField(
