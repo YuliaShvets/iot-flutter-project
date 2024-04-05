@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:iot_flutter_project/repository/LocalStorageRepository.dart';
+import 'package:iot_flutter_project/repository/local_storage_repository.dart';
 
 class RegistrationPage extends StatefulWidget {
   const RegistrationPage({Key? key}) : super(key: key);

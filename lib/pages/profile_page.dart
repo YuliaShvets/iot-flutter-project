@@ -1,6 +1,6 @@
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
-import 'package:iot_flutter_project/repository/LocalStorageRepository.dart';
+import 'package:iot_flutter_project/repository/local_storage_repository.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({Key? key});
