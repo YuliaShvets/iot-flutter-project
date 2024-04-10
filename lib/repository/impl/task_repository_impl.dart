@@ -29,7 +29,7 @@ class TaskRepositoryImpl implements TaskRepository {
   Future<void> deleteTask(String id) async {
     try {
       final response =
-          await http.delete(Uri.parse('http://10.0.2.2:8080/task/$id'));
+      await http.delete(Uri.parse('http://10.0.2.2:8080/task/$id'));
       if (response.statusCode == 200) {
       } else {
         throw Exception('Failed to delete task');

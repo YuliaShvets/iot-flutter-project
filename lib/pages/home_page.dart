@@ -1,73 +1,15 @@
-import 'dart:async';
-
-import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
-import 'package:iot_flutter_project/object/task.dart';
-import 'package:iot_flutter_project/repository/impl/task_repository_impl.dart';
-import 'package:iot_flutter_project/repository/task_repository.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
-class HomePage extends StatefulWidget {
-  const HomePage({Key? key}) : super(key: key);
+import 'package:iot_flutter_project/bloc/task/task_bloc.dart';
+import 'package:iot_flutter_project/bloc/task/task_events.dart';
+import 'package:iot_flutter_project/bloc/task/task_states.dart';
 
-  @override
-  _HomePageState createState() => _HomePageState();
-}
-
-class _HomePageState extends State<HomePage> {
-  List<Task> tasks = [];
-  late Connectivity _connectivity;
-  late StreamSubscription<ConnectivityResult> _connectivitySubscription;
-  bool _isConnected = true;
-
-  final TaskRepository _taskRepository = TaskRepositoryImpl();
-
-  @override
-  void initState() {
-    super.initState();
-    _connectivity = Connectivity();
-    _connectivitySubscription =
-        _connectivity.onConnectivityChanged.listen((ConnectivityResult result) {
-      setState(() {
-        _isConnected = (result != ConnectivityResult.none);
-      });
-      if (_isConnected) {
-        _fetchTasks();
-      }
-    });
-
-    _fetchTasks();
-  }
-
-  @override
-  void dispose() {
-    _connectivitySubscription.cancel();
-    super.dispose();
-  }
-
-  Future<void> _fetchTasks() async {
-    final List<Task> fetchedTasks = await _taskRepository.fetchTasks();
-    setState(() {
-      tasks = fetchedTasks;
-    });
-  }
-
-  Future<void> _addTask(String taskName) async {
-    await _taskRepository.addTask(taskName);
-    await _fetchTasks();
-  }
-
-  void _deleteTask(String id) async {
-    await _taskRepository.deleteTask(id);
-    setState(() {
-      tasks.removeWhere((task) => task.id == id);
-    });
-  }
+class HomePage extends StatelessWidget {
+  const HomePage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final Size screenSize = MediaQuery.of(context).size;
-    final double screenWidth = screenSize.width;
-
     return Scaffold(
       appBar: AppBar(
         title: const Text('Task Tracker'),
@@ -78,76 +20,68 @@ class _HomePageState extends State<HomePage> {
           ),
         ],
       ),
-      body: _isConnected
-          ? ListView.builder(
-              itemCount: tasks.length,
+      body: BlocConsumer<TaskBloc, TaskState>(
+        listener: (context, state) {
+          if (state is TasksLoadFailure) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text(state.error)),
+            );
+          }
+        },
+        builder: (context, state) {
+          if (state is TasksLoadInProgress) {
+            return const CircularProgressIndicator();
+          } else if (state is TasksLoadSuccess) {
+            return ListView.builder(
+              itemCount: state.tasks.length,
               itemBuilder: (context, index) {
+                final task = state.tasks[index];
                 return Dismissible(
-                  key: Key(tasks[index].id.toString()),
+                  key: Key(task.id.toString()),
                   direction: DismissDirection.endToStart,
+                  onDismissed: (direction) {
+                    BlocProvider.of<TaskBloc>(context).add(DeleteTask(task.id));
+                  },
                   background: Container(
                     color: Colors.red,
                     alignment: Alignment.centerRight,
                     padding: const EdgeInsets.only(right: 20),
-                    child: const Icon(
-                      Icons.delete,
-                      color: Colors.white,
-                    ),
+                    child: const Icon(Icons.delete, color: Colors.white),
                   ),
-                  onDismissed: (direction) {
-                    _deleteTask(tasks[index].id);
-                  },
                   child: ListTile(
-                    title: TextFormField(
-                      initialValue: tasks[index].name,
-                      onChanged: (value) {
-                        setState(() {
-                          tasks[index].name = value;
-                        });
-                      },
-                      decoration: InputDecoration(
-                        border: const OutlineInputBorder(),
-                        labelText: 'Task Name',
-                        contentPadding: EdgeInsets.symmetric(
-                          horizontal: screenWidth * 0.03,
-                          vertical: 10,
-                        ),
-                      ),
-                    ),
+                    title: Text(task.name),
                     trailing: Checkbox(
-                      value: tasks[index].completed,
-                      onChanged: (value) {
-                        setState(() {
-                          tasks[index].completed = value ?? false;
-                        });
+                      value: task.completed,
+                      onChanged: (bool? newValue) {
                       },
                     ),
                   ),
                 );
               },
-            )
-          : const Center(
-              child: Text(
-                'No Internet Connection',
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
+            );
+          } else if (state is TasksLoadFailure) {
+            return Center(
+              child: Text('Error: ${state.error}'),
+            );
+          } else {
+            return const Center(
+              child: Text('No data available'),
+            );
+          }
+        },
+      ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           Navigator.pushNamed(context, '/profile');
         },
         child: const Icon(Icons.person),
       ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
     );
   }
 
   void _showAddTaskDialog(BuildContext context) {
     String newTaskName = '';
-    showDialog(
+    showDialog<void>(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
@@ -163,14 +97,12 @@ class _HomePageState extends State<HomePage> {
           ),
           actions: [
             TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
+              onPressed: () => Navigator.of(context).pop(),
               child: const Text('Cancel'),
             ),
             ElevatedButton(
               onPressed: () {
-                _addTask(newTaskName);
+                BlocProvider.of<TaskBloc>(context).add(AddTask(newTaskName));
                 Navigator.of(context).pop();
               },
               child: const Text('Add'),

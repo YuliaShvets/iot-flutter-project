@@ -1,116 +1,92 @@
-import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
-import 'package:iot_flutter_project/repository/local_storage_repository.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
-class ProfilePage extends StatefulWidget {
-  const ProfilePage({Key? key});
+import 'package:iot_flutter_project/bloc/user/profile_bloc.dart';
+import 'package:iot_flutter_project/bloc/user/profile_events.dart';
+import 'package:iot_flutter_project/bloc/user/profile_states.dart';
 
-  @override
-  _ProfilePageState createState() => _ProfilePageState();
-}
-
-class _ProfilePageState extends State<ProfilePage> {
-  late Future<Map<String, String>> _userInfoFuture;
-  late bool _isConnected;
-
-  @override
-  void initState() {
-    super.initState();
-    _userInfoFuture = _getUserInfo();
-    _checkConnectivity();
-    Connectivity().onConnectivityChanged.listen((ConnectivityResult result) {
-      setState(() {
-        _isConnected = (result != ConnectivityResult.none);
-      });
-    });
-  }
-
-  Future<void> _checkConnectivity() async {
-    final result = await Connectivity().checkConnectivity();
-    setState(() {
-      _isConnected = (result != ConnectivityResult.none);
-    });
-  }
+class ProfilePage extends StatelessWidget {
+  const ProfilePage({super.key});
 
   @override
   Widget build(BuildContext context) {
+
+    context.read<ProfileBloc>().add(LoadUserProfile());
+
     return Scaffold(
       appBar: AppBar(title: const Text('User Profile')),
-      body: _isConnected ? _buildUserProfile() : _buildNoConnectionMessage(),
+      body: BlocBuilder<ProfileBloc, ProfileState>(
+        builder: (context, state) {
+          if (state is ProfileLoading) {
+            return const Center(child: CircularProgressIndicator());
+          } else if (state is ProfileLoaded) {
+            return _buildUserProfile(context, state);
+          } else if (state is ConnectivityUpdated) {
+            if (!state.isConnected) {
+              return _buildNoConnectionMessage(context);
+            }
+
+            return _buildUserProfile(context, state as ProfileLoaded);
+          } else if (state is ProfileError) {
+            return Center(child: Text('Error: ${state.error}'));
+          } else if (state is ProfileInitial) {
+            return const Center(child: Text('Loading...'));
+          }
+
+          return const Center(child: Text('Unknown state'));
+        },
+      ),
     );
   }
 
-  Widget _buildUserProfile() {
-    return FutureBuilder(
-      future: _userInfoFuture,
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator());
-        }
-        if (snapshot.hasError) {
-          return Center(child: Text('Error: ${snapshot.error}'));
-        }
-        final Map<String, String> userInfo =
-            snapshot.data as Map<String, String>;
-        final String username = userInfo['username'] ?? 'Username';
-        final String email = userInfo['email'] ?? 'Email';
-
-        return Center(
-          child: SingleChildScrollView(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const CircleAvatar(
-                  radius: 50,
-                  backgroundColor: Colors.blue,
-                  child: Icon(
-                    Icons.person,
-                    size: 50,
-                    color: Colors.white,
-                  ),
-                ),
-                const SizedBox(height: 20),
-                Text(
-                  username,
-                  style: const TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 10),
-                Text(
-                  email,
-                  style: const TextStyle(
-                    fontSize: 18,
-                  ),
-                ),
-                const SizedBox(height: 20),
-                ElevatedButton(
-                  onPressed: () {
-                    Navigator.pushNamed(context, '/edit_profile').then((_) {
-                      setState(() {
-                        _userInfoFuture = _getUserInfo();
-                      });
-                    });
-                  },
-                  child: const Text('Edit Profile'),
-                ),
-                const SizedBox(height: 10),
-                ElevatedButton(
-                  onPressed: () {
-                    _showLogoutConfirmationDialog(context);
-                  },
-                  child: const Text('Logout'),
-                ),
-              ],
+  Widget _buildUserProfile(BuildContext context, ProfileLoaded state) {
+    final userInfo = state.userInfo;
+    final username = userInfo['username'] ?? 'Username';
+    final email = userInfo['email'] ?? 'Email';
+    return Center(
+      child: SingleChildScrollView(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const CircleAvatar(
+              radius: 50,
+              backgroundColor: Colors.blue,
+              child: Icon(
+                Icons.person,
+                size: 50,
+                color: Colors.white,
+              ),
             ),
-          ),
-        );
-      },
+            const SizedBox(height: 20),
+            Text(
+              username,
+              style: const TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 10),
+            Text(
+              email,
+              style: const TextStyle(
+                fontSize: 18,
+              ),
+            ),
+            const SizedBox(height: 20),
+            const SizedBox(height: 10),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.pushNamedAndRemoveUntil(context, '/login', (route) => false);
+              },
+              child: const Text('Logout'),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
-  Widget _buildNoConnectionMessage() {
+  Widget _buildNoConnectionMessage(BuildContext context) {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -124,49 +100,13 @@ class _ProfilePageState extends State<ProfilePage> {
           ),
           const SizedBox(height: 10),
           ElevatedButton(
-            onPressed: _checkConnectivity,
+            onPressed: () {
+              BlocProvider.of<ProfileBloc>(context).add(CheckConnectivity());
+            },
             child: const Text('Retry'),
           ),
         ],
       ),
-    );
-  }
-
-  final LocalStorageRepository _localStorageRepository =
-      LocalStorageRepository();
-
-  Future<Map<String, String>> _getUserInfo() async {
-    final userInfo = await _localStorageRepository.getUserInfo();
-    return userInfo;
-  }
-
-  Future<void> _logout(BuildContext context) async {
-    Navigator.pushNamedAndRemoveUntil(context, '/login', (route) => false);
-  }
-
-  Future<void> _showLogoutConfirmationDialog(BuildContext context) async {
-    return showDialog<void>(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Confirm Logout'),
-          content: const Text('Are you sure you want to logout?'),
-          actions: <Widget>[
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: const Text('Cancel'),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                _logout(context);
-              },
-              child: const Text('Logout'),
-            ),
-          ],
-        );
-      },
     );
   }
 }
