@@ -13,10 +13,10 @@ class LocalStorageRepository {
   }
 
   Future<void> saveRegistrationData(
-      String username,
-      String email,
-      String password,
-      ) async {
+    String username,
+    String email,
+    String password,
+  ) async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.setString(_usernameKey, username);
     await prefs.setString(_emailKey, email);
