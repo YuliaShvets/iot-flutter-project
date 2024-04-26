@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:iot_flutter_project/repository/local_storage_repository.dart';
 
 class RegistrationPage extends StatefulWidget {
-  const RegistrationPage({Key? key}) : super(key: key);
+  const RegistrationPage({super.key});
 
   @override
-  _RegistrationPageState createState() => _RegistrationPageState();
+  State<RegistrationPage> createState() => _RegistrationPageState();
 }
 
 class _RegistrationPageState extends State<RegistrationPage> {
@@ -16,7 +16,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
   final LocalStorageRepository _localStorageRepository =
-      LocalStorageRepository();
+  LocalStorageRepository();
 
   Future<void> _saveRegistrationData() async {
     await _localStorageRepository.saveRegistrationData(

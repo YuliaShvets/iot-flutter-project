@@ -6,10 +6,10 @@ import 'package:iot_flutter_project/repository/local_storage_repository.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class LoginPage extends StatefulWidget {
-  const LoginPage({Key? key});
+  const LoginPage({super.key});
 
   @override
-  _LoginPageState createState() => _LoginPageState();
+  State<LoginPage> createState() => _LoginPageState();
 }
 
 class _LoginPageState extends State<LoginPage>
@@ -25,13 +25,13 @@ class _LoginPageState extends State<LoginPage>
   late StreamSubscription<ConnectivityResult> _connectivitySubscription;
 
   final LocalStorageRepository _localStorageRepository =
-      LocalStorageRepository();
+  LocalStorageRepository();
 
   @override
   void initState() {
     super.initState();
     _controller = AnimationController(
-        duration: const Duration(milliseconds: 1000), vsync: this);
+      duration: const Duration(milliseconds: 1000), vsync: this,);
 
     _logoAnimation = Tween<double>(begin: 0, end: 1).animate(
       CurvedAnimation(parent: _controller, curve: const Interval(0, 0.5)),
@@ -52,7 +52,7 @@ class _LoginPageState extends State<LoginPage>
 
   Future<void> _initConnectivity() async {
     final ConnectivityResult connectivityResult =
-        await Connectivity().checkConnectivity();
+    await Connectivity().checkConnectivity();
     setState(() {
       _connectivityResult = connectivityResult;
     });
@@ -99,7 +99,7 @@ class _LoginPageState extends State<LoginPage>
     if (loggedIn) {
       Navigator.pushReplacementNamed(context, '/home');
     } else {
-      showDialog(
+      showDialog<void>(
         context: context,
         builder: (context) => AlertDialog(
           title: const Text('Login Failed'),
@@ -131,72 +131,72 @@ class _LoginPageState extends State<LoginPage>
       ),
       body: _connectivityResult == ConnectivityResult.none
           ? const Center(
-              child: Text(
-                'No Internet Connection',
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-              ),
-            )
+        child: Text(
+          'No Internet Connection',
+          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+        ),
+      )
           : Padding(
-              padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.1),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  FadeTransition(
-                    opacity: _logoAnimation,
-                    child: Container(
-                      margin: const EdgeInsets.only(bottom: 20),
-                      child: Image.asset(
-                        'assets/image.png',
-                        height: logoHeight,
-                      ),
-                    ),
-                  ),
-                  FadeTransition(
-                    opacity: _formAnimation,
-                    child: TextFormField(
-                      controller: _emailController,
-                      decoration: const InputDecoration(
-                        labelText: 'Email',
-                        border: OutlineInputBorder(),
-                      ),
-                    ),
-                  ),
-                  SizedBox(height: verticalSpacing),
-                  FadeTransition(
-                    opacity: _formAnimation,
-                    child: TextFormField(
-                      controller: _passwordController,
-                      obscureText: true,
-                      decoration: const InputDecoration(
-                        labelText: 'Password',
-                        border: OutlineInputBorder(),
-                      ),
-                    ),
-                  ),
-                  SizedBox(height: verticalSpacing),
-                  Padding(
-                    padding: EdgeInsets.symmetric(horizontal: buttonPadding),
-                    child: ScaleTransition(
-                      scale: _formAnimation,
-                      child: ElevatedButton(
-                        onPressed: _login,
-                        child: const Text('Login'),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  ScaleTransition(
-                    scale: _formAnimation,
-                    child: TextButton(
-                      onPressed: () {
-                        Navigator.pushNamed(context, '/registration');
-                      },
-                      child: const Text('Register'),
-                    ),
-                  ),
-                ],
+        padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.1),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            FadeTransition(
+              opacity: _logoAnimation,
+              child: Container(
+                margin: const EdgeInsets.only(bottom: 20),
+                child: Image.asset(
+                  'assets/image.png',
+                  height: logoHeight,
+                ),
               ),
             ),
+            FadeTransition(
+              opacity: _formAnimation,
+              child: TextFormField(
+                controller: _emailController,
+                decoration: const InputDecoration(
+                  labelText: 'Email',
+                  border: OutlineInputBorder(),
+                ),
+              ),
+            ),
+            SizedBox(height: verticalSpacing),
+            FadeTransition(
+              opacity: _formAnimation,
+              child: TextFormField(
+                controller: _passwordController,
+                obscureText: true,
+                decoration: const InputDecoration(
+                  labelText: 'Password',
+                  border: OutlineInputBorder(),
+                ),
+              ),
+            ),
+            SizedBox(height: verticalSpacing),
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: buttonPadding),
+              child: ScaleTransition(
+                scale: _formAnimation,
+                child: ElevatedButton(
+                  onPressed: _login,
+                  child: const Text('Login'),
+                ),
+              ),
+            ),
+            const SizedBox(height: 10),
+            ScaleTransition(
+              scale: _formAnimation,
+              child: TextButton(
+                onPressed: () {
+                  Navigator.pushNamed(context, '/registration');
+                },
+                child: const Text('Register'),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

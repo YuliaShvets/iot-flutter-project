@@ -13,7 +13,8 @@ class Task {
     return Task(
       id: json['id'] != null ? json['id'] as String : '',
       name: json['name'] != null ? json['name'] as String : '',
-      completed: json['completed'] != null ? json['completed'] as bool : false,
+      completed: json['completed'] != null ? json['completed']
+      as bool : false,
     );
   }
 
