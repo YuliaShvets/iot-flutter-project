@@ -1,3 +1,4 @@
+import 'package:flash_light_control_plugin/flash_light_control_plugin.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -6,7 +7,8 @@ import 'package:iot_flutter_project/bloc/task/task_events.dart';
 import 'package:iot_flutter_project/bloc/task/task_states.dart';
 
 class HomePage extends StatelessWidget {
-  const HomePage({super.key});
+  bool startLight = true;
+  HomePage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -72,7 +74,12 @@ class HomePage extends StatelessWidget {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          Navigator.pushNamed(context, '/profile');
+          if (startLight) {
+            FlashLightControlPlugin.turnOn();
+          } else {
+            FlashLightControlPlugin.turnOff();
+          }
+          startLight = !startLight;
         },
         child: const Icon(Icons.person),
       ),
